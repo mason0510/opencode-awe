@@ -71,10 +71,36 @@ echo "[install-opencode-local] Local config updated: $TARGET_PATH"
 
 echo "[install-opencode-local] Checking opencode binary on this machine..."
 
+echo "[install-opencode-local] Local config updated: $TARGET_PATH"
+
+echo "[install-opencode-local] Checking opencode binary on this machine..."
+
 if command -v opencode >/dev/null 2>&1; then
-  echo "[install-opencode-local] opencode already installed: $(command -v opencode)"
-else
-  echo "[install-opencode-local] opencode not found on this machine."
+  if [ "${OPENCODE_FORCE_REINSTALL:-0}" = "1" ]; then
+    echo "[install-opencode-local] opencode detected, FORCE_REINSTALL=1 → cleaning old install..."
+    # 嘗試清理默認安裝位置（若存在）
+    if [ -d "$HOME/.opencode" ]; then
+      echo "  - Removing $HOME/.opencode"
+      rm -rf "$HOME/.opencode"
+    fi
+    if [ -L "/usr/local/bin/opencode" ] || [ -f "/usr/local/bin/opencode" ]; then
+      echo "  - Removing /usr/local/bin/opencode"
+      sudo rm -f /usr/local/bin/opencode || true
+    fi
+    # 清理後重新檢查
+    hash -r || true
+    if command -v opencode >/dev/null 2>&1; then
+      echo "  [WARN] opencode 仍在 PATH 中（可能是其他安裝方式），請手動檢查。" >&2
+    else
+      echo "  [OK] 本地默認安裝已清理。"
+    fi
+  else
+    echo "[install-opencode-local] opencode already installed: $(command -v opencode)"
+  fi
+fi
+
+if ! command -v opencode >/dev/null 2>&1; then
+  echo "[install-opencode-local] opencode not found on this machine after cleanup/检查。"
   if [ -n "${OPENCODE_INSTALL_CMD:-}" ]; then
     echo "[install-opencode-local] Installing opencode via OPENCODE_INSTALL_CMD..."
     # 由用戶提供的命令，這裡不做硬編碼，避免洩漏個人環境

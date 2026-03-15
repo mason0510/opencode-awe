@@ -44,9 +44,9 @@ echo "[setup-opencode-wsl] Generating config at $TARGET_PATH ..."
 
 tmp_file="$TARGET_PATH.tmp.$$"
 
+# WSL 只需要配置 openai 的 apiKey，不修改 gemini.options.apiKey
 jq --arg key "$OPENAI_API_KEY" '
-  .provider.openai.options.apiKey = $key |
-  .provider.gemini.options.apiKey = $key
+  .provider.openai.options.apiKey = $key
 ' "$TEMPLATE_PATH" > "$tmp_file"
 
 mv "$tmp_file" "$TARGET_PATH"

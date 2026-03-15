@@ -50,9 +50,32 @@ echo "[install-opencode] Target: $REMOTE_USER@$REMOTE_HOST"
 
 echo "[install-opencode] Checking opencode on remote..."
 if ssh "$REMOTE_USER@$REMOTE_HOST" "command -v opencode >/dev/null 2>&1"; then
-  echo "[install-opencode] opencode already installed on remote."
-else
-  echo "[install-opencode] opencode not found on remote."
+  if [ "${OPENCODE_FORCE_REINSTALL:-0}" = "1" ]; then
+    echo "[install-opencode] opencode detected on remote, FORCE_REINSTALL=1 → cleaning old install..."
+    ssh "$REMOTE_USER@$REMOTE_HOST" '
+      set -e
+      if [ -d "$HOME/.opencode" ]; then
+        echo "  - Removing $HOME/.opencode"
+        rm -rf "$HOME/.opencode"
+      fi
+      if [ -L "/usr/local/bin/opencode" ] || [ -f "/usr/local/bin/opencode" ]; then
+        echo "  - Removing /usr/local/bin/opencode"
+        sudo rm -f /usr/local/bin/opencode || true
+      fi
+      hash -r || true
+      if command -v opencode >/dev/null 2>&1; then
+        echo "  [WARN] opencode 仍在 PATH 中（可能使用其他安裝方式），請人工檢查。" >&2
+      else
+        echo "  [OK] 默認安裝路徑已清理。"
+      fi
+    '
+  else
+    echo "[install-opencode] opencode already installed on remote."
+  fi
+fi
+
+if ! ssh "$REMOTE_USER@$REMOTE_HOST" "command -v opencode >/dev/null 2>&1"; then
+  echo "[install-opencode] opencode not found on remote after cleanup/檢查。"
   if [ -z "${OPENCODE_INSTALL_CMD:-}" ]; then
     echo "[install-opencode][ERROR] OPENCODE_INSTALL_CMD not set, cannot auto-install." >&2
     echo "  請查看官方文檔，設置安裝命令，例如：" >&2
