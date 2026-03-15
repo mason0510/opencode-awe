@@ -114,4 +114,17 @@ REMOTE_HOST="$REMOTE_HOST" \
 OPENAI_API_KEY="$OPENAI_API_KEY" \
 "$SCRIPT_DIR/opencode-sync-config.sh"
 
-echo "[install-opencode] Done. You can now SSH to $REMOTE_USER@$REMOTE_HOST and run 'opencode'."
+echo "[install-opencode] Running a simple opencode self-test on remote (opencode --help)..."
+ssh "$REMOTE_USER@$REMOTE_HOST" '
+  if command -v opencode >/dev/null 2>&1; then
+    if opencode --help >/dev/null 2>&1; then
+      echo "[install-opencode][remote] Test OK: 'opencode --help' succeeded."
+    else
+      echo "[install-opencode][remote][WARN] 'opencode --help' 返回非 0，請手動檢查。" >&2
+    fi
+  else
+    echo "[install-opencode][remote][WARN] 無法執行測試：opencode 不在 PATH 中。" >&2
+  fi
+'
+
+echo "[install-opencode] Done."

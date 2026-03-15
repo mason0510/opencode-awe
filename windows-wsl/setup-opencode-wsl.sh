@@ -53,4 +53,15 @@ mv "$tmp_file" "$TARGET_PATH"
 
 echo "[setup-opencode-wsl] Local config updated: $TARGET_PATH"
 
-echo "[setup-opencode-wsl] Done. 現在可以在 WSL 中直接運行 'opencode'（如果已安裝）。"
+echo "[setup-opencode-wsl] Running a simple opencode self-test in WSL (opencode --help)..."
+if command -v opencode >/dev/null 2>&1; then
+  if opencode --help >/dev/null 2>&1; then
+    echo "[setup-opencode-wsl] Test OK: 'opencode --help' succeeded."
+  else
+    echo "[setup-opencode-wsl][WARN] 'opencode --help' 返回非 0，請手動檢查。" >&2
+  fi
+else
+  echo "[setup-opencode-wsl][WARN] 無法執行測試：opencode 不在 PATH 中（可能尚未安裝）。" >&2
+fi
+
+echo "[setup-opencode-wsl] Done."

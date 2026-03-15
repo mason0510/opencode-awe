@@ -111,4 +111,15 @@ if ! command -v opencode >/dev/null 2>&1; then
   fi
 fi
 
-echo "[install-opencode-local] Done. 現在可以在本機直接運行 'opencode'（如已安裝）。"
+echo "[install-opencode-local] Running a simple opencode self-test (opencode --help)..."
+if command -v opencode >/dev/null 2>&1; then
+  if opencode --help >/dev/null 2>&1; then
+    echo "[install-opencode-local] Test OK: 'opencode --help' succeeded."
+  else
+    echo "[install-opencode-local][WARN] 'opencode --help' 返回非 0，請手動檢查。" >&2
+  fi
+else
+  echo "[install-opencode-local][WARN] 無法執行測試：opencode 仍不在 PATH 中。" >&2
+fi
+
+echo "[install-opencode-local] Done."
