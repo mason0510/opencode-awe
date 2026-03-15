@@ -51,13 +51,14 @@ echo "[reset-opencode-wsl] Step 2: reinstalling OpenCode (optional)..."
 if command -v opencode >/dev/null 2>&1; then
   echo "  [WARN] opencode 仍在 PATH 中，說明有其他安裝來源（請人工檢查）。" >&2
 else
-  if [ -n "${OPENCODE_INSTALL_CMD:-}" ]; then
-    echo "  - Installing opencode via OPENCODE_INSTALL_CMD..."
-    bash -lc "$OPENCODE_INSTALL_CMD"
-  else
-    echo "  [INFO] 未設置 OPENCODE_INSTALL_CMD，跳過自動安裝。" >&2
-    echo "         如需重新安裝，請先安裝 opencode 再重跑本腳本或直接跑 setup-opencode-wsl.sh。" >&2
+  # 默認自動安裝：如未顯式設置 OPENCODE_INSTALL_CMD，使用官方安裝命令
+  if [ -z "${OPENCODE_INSTALL_CMD:-}" ]; then
+    OPENCODE_INSTALL_CMD="curl -fsSL https://opencode.ai/install.sh | bash"
+    echo "  [INFO] 未設置 OPENCODE_INSTALL_CMD，使用默認安裝命令：$OPENCODE_INSTALL_CMD"
   fi
+
+  echo "  - Installing opencode via OPENCODE_INSTALL_CMD..."
+  bash -lc "$OPENCODE_INSTALL_CMD"
 fi
 
 echo "[reset-opencode-wsl] Step 3: reconfigure OpenCode via windows-wsl/setup-opencode-wsl.sh"
